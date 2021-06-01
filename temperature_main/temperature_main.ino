@@ -48,4 +48,28 @@ uint8_t color = 0; // the state of the color
 void loop()
 {
 
+    //storing temperature in specific time interval to be diaplayed in Mode 1
+    if (currentTime - previoustime1 >= time_interval_1) {
+      previoustime1 = currentTime;
+      currentTemp = temp;
+
+      // Values of temperature in different units to be used in Mode 5
+      currentTempF = ((9 / 5) * (currentTemp)) + 32;
+      currentTempK = currentTemp + 273;
+      Serial.printf("%.2f, %.2f,%.2f  \r\n", currentTemp, currentTempF, currentTempK);
+    }
+
+    // storing average temperature in a day to be displayed in Mode 2
+    if (currentTime - previoustime2 >= time_interval_1) {
+      previoustime2 = currentTime;
+      sumtemp = (sumtemp + temp) / 2; //calculating avg temp using every temp vale in each time interval
+      Serial.printf("%.2f, %.2f \r\n", temp, sumtemp);
+
+      // resetting the value of sumtemp in every day (86400000 millisecond)
+      if (currentTime - prevtime_day >= 86400000 ) {
+        prevtime_day = currentTime;
+        sumtemp = temp;
+        Serial.printf("%.2f, %.2f \r\n", temp, sumtemp);
+      }
+    }
 }
