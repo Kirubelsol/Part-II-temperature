@@ -43,7 +43,7 @@ void setup()
   }
   M5.IMU.getTempData(&sumtemp); //setting the sumtemp to the initial temp
 }
-uint8_t color = 0; // the state of the color
+uint8_t color = 0; // the state of the color.
 
 void loop()
 {
