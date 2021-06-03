@@ -47,5 +47,173 @@ uint8_t color = 0; // the state of the color.
 
 void loop()
 {
+if (M5.Btn.wasPressed())
+          {
+            // make check false so it will only display the colors
+            //with temperature range (the task) with out displaying
+            //number 3 till tilted
 
-}
+            check = false;
+            M5.dis.clear();
+            M5.IMU.getTempData(&temp);
+
+
+            if (temp <= 10)
+            { //setting lights to blue
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xf000ff);
+              M5.dis.drawpix(15, 0xf000ff);
+              M5.dis.drawpix(16, 0xf000ff);
+              M5.dis.drawpix(17, 0xf000ff);
+              M5.dis.drawpix(18, 0xf000ff);
+              M5.dis.drawpix(19, 0xf000ff);
+              M5.dis.drawpix(20, 0xf000ff);
+              M5.dis.drawpix(21, 0xf000ff);
+              M5.dis.drawpix(22, 0xf000ff);
+              M5.dis.drawpix(23, 0xf000ff);
+              M5.dis.drawpix(24, 0xf000ff);
+
+
+            }
+
+
+            if (temp >= 10 && temp < 20)
+            { // settign lights to green\ M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xf00800);
+              M5.dis.drawpix(15, 0xf00800);
+              M5.dis.drawpix(16, 0xf00800);
+              M5.dis.drawpix(17, 0xf00800);
+              M5.dis.drawpix(18, 0xf00800);
+              M5.dis.drawpix(19, 0xf00800);
+              M5.dis.drawpix(20, 0xf00800);
+              M5.dis.drawpix(21, 0xf00800);
+              M5.dis.drawpix(22, 0xf00800);
+              M5.dis.drawpix(23, 0xf00800);
+              M5.dis.drawpix(24, 0xf00800);
+
+            }
+
+            if (temp >= 20 && temp < 30)
+            { //setting lights to white\ M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xffffff);
+              M5.dis.drawpix(15, 0xffffff);
+              M5.dis.drawpix(16, 0xffffff);
+              M5.dis.drawpix(17, 0xffffff);
+              M5.dis.drawpix(18, 0xffffff);
+              M5.dis.drawpix(19, 0xffffff);
+              M5.dis.drawpix(20, 0xffffff);
+              M5.dis.drawpix(21, 0xffffff);
+              M5.dis.drawpix(22, 0xffffff);
+              M5.dis.drawpix(23, 0xffffff);
+              M5.dis.drawpix(24, 0xffffff);
+
+            }
+            if (temp >= 30  && temp < 40)
+            {
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xffff00);
+              M5.dis.drawpix(15, 0xffff00);
+              M5.dis.drawpix(16, 0xffff00);
+              M5.dis.drawpix(17, 0xffff00);
+              M5.dis.drawpix(18, 0xffff00);
+              M5.dis.drawpix(19, 0xffff00);
+              M5.dis.drawpix(20, 0xfffff00);
+              M5.dis.drawpix(21, 0xffff00);
+              M5.dis.drawpix(22, 0xffff00);
+              M5.dis.drawpix(23, 0xffff00);
+              M5.dis.drawpix(24, 0xffff00);
+
+            }
+
+            if (temp >= 40)
+            {
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(15, 0x00f000);
+              M5.dis.drawpix(16, 0x00f000);
+              M5.dis.drawpix(17, 0x00f000);
+              M5.dis.drawpix(18, 0x00f000);
+              M5.dis.drawpix(19, 0x00f000);
+              M5.dis.drawpix(20, 0x00f000);
+              M5.dis.drawpix(21, 0x00f000);
+              M5.dis.drawpix(22, 0x00f000);
+              M5.dis.drawpix(23, 0x00f000);
+              M5.dis.drawpix(24, 0x00f000);
+
+            }
+
+
+          }
+}  
+  
+  
