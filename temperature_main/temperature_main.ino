@@ -8,9 +8,10 @@
 
 
 bool IMU6886Flag = false;
-float gyroX, gyroY , gyroZ, temp; // declare
+float gyroX, gyroY , gyroZ, temp; // declare for measuring the values
 int c = 0;
 int count = 0;
+// used for transition between modes
 bool check;
 bool check1; // for transit between mode 3 and 4
 bool check2; // for internal mode 4
@@ -23,7 +24,6 @@ bool checkmode5 = true; // for mode 5
 bool check51 = false;
 bool check52 = false;
 bool check53 = false;
-bool forstarting = false; // for starting the whoe prorgram
 float sumtemp;
 uint8_t DisBuff[2 + 5 * 5 * 3];
 
@@ -309,7 +309,8 @@ void shownumbers(int numbe)
 
 void loop()
 {
-  long currentTime = millis();
+  long currentTime = millis();  // measure the current time
+  // declare variables to store the temperature in different units
   float currentTemp = 0;
   float currentTempF = 0; // in Farhenite
   float currentTempK = 0; // in Kelvin
@@ -324,7 +325,6 @@ void loop()
     if (currentTime - previoustime1 >= time_interval_1) {
       previoustime1 = currentTime;
       currentTemp = temp;
-
 
       // Values of temperature in different units to be used in Mode 5
       currentTempF = ((9 / 5) * (currentTemp)) + 32;
@@ -346,697 +346,693 @@ void loop()
       }
     }
 
-    if ((M5.Btn.wasPressed())) {
-    forstarting = true;
-  }
+    //solving for tilting
 
-  //solving for tilting
-
-  //if clause to measure orientation change is specified interval
-  if (forstarting == true) {
+    //if clause to measure orientation change is specified interval
     if (currentTime - previoustime >= time_interval) {
-        previoustime = currentTime;
-
-        //specified orientation change to change modes
-        if ((gyroY ) > 60 && (gyroY) < 300) {
-          counter++;
-
-        }
-
-        //switch for the five modes
-        switch (counter)
-        {
-
-          // case for active temperature
-          case 1:
-            checkmode5 = true; // related to the end of code to enable mode 5
-            if (checkmode1 == true) {
-              //display 1 to show first mode
-              M5.dis.clear();
-              M5.dis.drawpix(3, 0xf00000);
-              M5.dis.drawpix(7, 0xf00000);
-              M5.dis.drawpix(8, 0xf00000);
-              M5.dis.drawpix(13, 0xf00000);
-              M5.dis.drawpix(18, 0xf00000);
-              M5.dis.drawpix(23, 0xf00000);
-            }
-
-            // if button is pressed start the task
-            if (M5.Btn.wasPressed())
-            {
-              checkmode1 = false;
-              checkm1 = true;
-            }
-
-            if (checkm1 == true) {
-              tempC = currentTemp;
-
-              int numofdigit = int(log10(tempC) + 1); // find the number of digits to the temperature
-              int power = pow(10, numofdigit); // calculate ten to the power of number of digit to be used for display
-
-
-              //loop to display individual numbers of the temperature
-              for (int i = 0; i < numofdigit; i++)
-              {
-                power /= 10;
-                int individualnum = ( tempC / power) % 10;
-
-                M5.dis.clear ();
-                shownumbers(individualnum);
-                delay(1500);
-                if ((gyroY ) > 60 && (gyroY) < 300) {
-                  checkm1 = false;
-                }
-              }
-              M5.dis.clear ();
-              charaC();
-              delay(1500);
-              if ((gyroY ) > 60 && (gyroY) < 300) {
-                checkm1 = false;
-              }
-
-            }
-            //          setBuff(0x255, 0x255, 0x255);
-            //          M5.dis.displaybuff(DisBuff); //add M5.update later
-            M5.update();
-            break;
-
-          // case for average temperature
-          case 2:
-            checkmode1 = true;
-            checkm1 = false;
-            // display 2 to show second mode
-            if (checkmode2 == true) {
-              M5.dis.clear();
-              M5.dis.drawpix(2, 0xf00000);
-              M5.dis.drawpix(3, 0xf00000);
-              M5.dis.drawpix(6, 0xf00000);
-              M5.dis.drawpix(8, 0xf00000);
-              M5.dis.drawpix(12, 0xf00000);
-              M5.dis.drawpix(16, 0xf00000);
-              M5.dis.drawpix(21, 0xf00000);
-              M5.dis.drawpix(22, 0xf00000);
-              M5.dis.drawpix(23, 0xf00000);
-            }
-            // if button is pressed start the task
-            if (M5.Btn.wasPressed())
-            {
-              checkmode2 = false;
-              checkm2 = true;
-            }
-
-            if (checkm2 == true) {
-              avgtempC = sumtemp;
-
-              int numofdigit = int(log10(avgtempC) + 1); // find the number of digits to the temperature
-              int power = pow(10, numofdigit); // calculate ten to the power of number of digit to be used for display
-
-
-              //loop to display individual numbers of the temperature
-              for (int i = 0; i < numofdigit; i++)
-              {
-                power /= 10;
-                int individualnum2 = (avgtempC / power) % 10;
-
-                M5.dis.clear ();
-                shownumbers(individualnum2);
-                delay(1500);
-                if ((gyroY ) > 60 && (gyroY) < 300) {
-                  checkm1 = false;
-                }
-              }
-              M5.dis.clear ();
-              charaC();
-              delay(1500);
-              if ((gyroY ) > 60 && (gyroY) < 300) {
-                checkm1 = false;
-              }
-
-            }
-
-            check = true; // used to enable the 3 case, related with the case 3 code
-
-            M5.update();
-            break;
-
-          // case to show temperature range and current temp as color
-          case 3:
-            checkmode2 = true;
-            checkm2 = false;
-            // if it comes from the second case
-            if (check) {
-              //display 3 to show case 3
-              M5.dis.clear();
-              M5.dis.drawpix(1, 0xf00000);
-              M5.dis.drawpix(2, 0xf00000);
-              M5.dis.drawpix(3, 0xf00000);
-              M5.dis.drawpix(8, 0xf00000);
-              M5.dis.drawpix(11, 0xf00000);
-              M5.dis.drawpix(12, 0xf00000);
-              M5.dis.drawpix(13, 0xf00000);
-              M5.dis.drawpix(18, 0xf00000);
-              M5.dis.drawpix(21, 0xf00000);
-              M5.dis.drawpix(22, 0xf00000);
-              M5.dis.drawpix(23, 0xf00000);
-            }
-
-
-            if (M5.Btn.wasPressed())
-            {
-              // make check false so it will only display the colors
-              //with temperature range (the task) with out displaying
-              //number 3 till tilted
-
-              check = false;
-              M5.dis.clear();
-              M5.IMU.getTempData(&temp);
-
-
-              if (temp <= 10)
-              { //setting lights to blue
-                M5.dis.drawpix(0, 0xf000ff);
-                M5.dis.drawpix(1, 0xf00800);
-                M5.dis.drawpix(2, 0xffffff);
-                M5.dis.drawpix(3, 0xffff00);
-                M5.dis.drawpix(4, 0x00f000);
-                M5.dis.drawpix(5, 0xf000ff);
-                M5.dis.drawpix(6, 0xf00800);
-                M5.dis.drawpix(7, 0xffffff);
-                M5.dis.drawpix(8, 0xffff00);
-                M5.dis.drawpix(9, 0x00f000);
-                M5.dis.drawpix(10, 0xf000ff);
-                M5.dis.drawpix(11, 0xf00800);
-                M5.dis.drawpix(12, 0xffffff);
-                M5.dis.drawpix(13, 0xffff00);
-                M5.dis.drawpix(14, 0x00f000);
-                M5.dis.drawpix(14, 0xf000ff);
-                M5.dis.drawpix(15, 0xf000ff);
-                M5.dis.drawpix(16, 0xf000ff);
-                M5.dis.drawpix(17, 0xf000ff);
-                M5.dis.drawpix(18, 0xf000ff);
-                M5.dis.drawpix(19, 0xf000ff);
-                M5.dis.drawpix(20, 0xf000ff);
-                M5.dis.drawpix(21, 0xf000ff);
-                M5.dis.drawpix(22, 0xf000ff);
-                M5.dis.drawpix(23, 0xf000ff);
-                M5.dis.drawpix(24, 0xf000ff);
-
-
-              }
-
-
-              if (temp >= 10 && temp < 20)
-              { // settign lights to green\ M5.dis.drawpix(0, 0xf000ff);
-                M5.dis.drawpix(1, 0xf00800);
-                M5.dis.drawpix(2, 0xffffff);
-                M5.dis.drawpix(3, 0xffff00);
-                M5.dis.drawpix(4, 0x00f000);
-                M5.dis.drawpix(5, 0xf000ff);
-                M5.dis.drawpix(6, 0xf00800);
-                M5.dis.drawpix(7, 0xffffff);
-                M5.dis.drawpix(8, 0xffff00);
-                M5.dis.drawpix(9, 0x00f000);
-                M5.dis.drawpix(10, 0xf000ff);
-                M5.dis.drawpix(11, 0xf00800);
-                M5.dis.drawpix(12, 0xffffff);
-                M5.dis.drawpix(13, 0xffff00);
-                M5.dis.drawpix(14, 0x00f000);
-                M5.dis.drawpix(14, 0xf00800);
-                M5.dis.drawpix(15, 0xf00800);
-                M5.dis.drawpix(16, 0xf00800);
-                M5.dis.drawpix(17, 0xf00800);
-                M5.dis.drawpix(18, 0xf00800);
-                M5.dis.drawpix(19, 0xf00800);
-                M5.dis.drawpix(20, 0xf00800);
-                M5.dis.drawpix(21, 0xf00800);
-                M5.dis.drawpix(22, 0xf00800);
-                M5.dis.drawpix(23, 0xf00800);
-                M5.dis.drawpix(24, 0xf00800);
-
-              }
-
-              if (temp >= 20 && temp < 30)
-              { //setting lights to white\ M5.dis.drawpix(0, 0xf000ff);
-                M5.dis.drawpix(1, 0xf00800);
-                M5.dis.drawpix(2, 0xffffff);
-                M5.dis.drawpix(3, 0xffff00);
-                M5.dis.drawpix(4, 0x00f000);
-                M5.dis.drawpix(5, 0xf000ff);
-                M5.dis.drawpix(6, 0xf00800);
-                M5.dis.drawpix(7, 0xffffff);
-                M5.dis.drawpix(8, 0xffff00);
-                M5.dis.drawpix(9, 0x00f000);
-                M5.dis.drawpix(10, 0xf000ff);
-                M5.dis.drawpix(11, 0xf00800);
-                M5.dis.drawpix(12, 0xffffff);
-                M5.dis.drawpix(13, 0xffff00);
-                M5.dis.drawpix(14, 0x00f000);
-                M5.dis.drawpix(14, 0xffffff);
-                M5.dis.drawpix(15, 0xffffff);
-                M5.dis.drawpix(16, 0xffffff);
-                M5.dis.drawpix(17, 0xffffff);
-                M5.dis.drawpix(18, 0xffffff);
-                M5.dis.drawpix(19, 0xffffff);
-                M5.dis.drawpix(20, 0xffffff);
-                M5.dis.drawpix(21, 0xffffff);
-                M5.dis.drawpix(22, 0xffffff);
-                M5.dis.drawpix(23, 0xffffff);
-                M5.dis.drawpix(24, 0xffffff);
-
-              }
-              if (temp >= 30  && temp < 40)
-              {
-                M5.dis.drawpix(0, 0xf000ff);
-                M5.dis.drawpix(1, 0xf00800);
-                M5.dis.drawpix(2, 0xffffff);
-                M5.dis.drawpix(3, 0xffff00);
-                M5.dis.drawpix(4, 0x00f000);
-                M5.dis.drawpix(5, 0xf000ff);
-                M5.dis.drawpix(6, 0xf00800);
-                M5.dis.drawpix(7, 0xffffff);
-                M5.dis.drawpix(8, 0xffff00);
-                M5.dis.drawpix(9, 0x00f000);
-                M5.dis.drawpix(10, 0xf000ff);
-                M5.dis.drawpix(11, 0xf00800);
-                M5.dis.drawpix(12, 0xffffff);
-                M5.dis.drawpix(13, 0xffff00);
-                M5.dis.drawpix(14, 0x00f000);
-                M5.dis.drawpix(14, 0xffff00);
-                M5.dis.drawpix(15, 0xffff00);
-                M5.dis.drawpix(16, 0xffff00);
-                M5.dis.drawpix(17, 0xffff00);
-                M5.dis.drawpix(18, 0xffff00);
-                M5.dis.drawpix(19, 0xffff00);
-                M5.dis.drawpix(20, 0xfffff00);
-                M5.dis.drawpix(21, 0xffff00);
-                M5.dis.drawpix(22, 0xffff00);
-                M5.dis.drawpix(23, 0xffff00);
-                M5.dis.drawpix(24, 0xffff00);
-
-              }
-
-              if (temp >= 40)
-              {
-                M5.dis.drawpix(0, 0xf000ff);
-                M5.dis.drawpix(1, 0xf00800);
-                M5.dis.drawpix(2, 0xffffff);
-                M5.dis.drawpix(3, 0xffff00);
-                M5.dis.drawpix(4, 0x00f000);
-                M5.dis.drawpix(5, 0xf000ff);
-                M5.dis.drawpix(6, 0xf00800);
-                M5.dis.drawpix(7, 0xffffff);
-                M5.dis.drawpix(8, 0xffff00);
-                M5.dis.drawpix(9, 0x00f000);
-                M5.dis.drawpix(10, 0xf000ff);
-                M5.dis.drawpix(11, 0xf00800);
-                M5.dis.drawpix(12, 0xffffff);
-                M5.dis.drawpix(13, 0xffff00);
-                M5.dis.drawpix(14, 0x00f000);
-                M5.dis.drawpix(14, 0x00f000);
-                M5.dis.drawpix(15, 0x00f000);
-                M5.dis.drawpix(16, 0x00f000);
-                M5.dis.drawpix(17, 0x00f000);
-                M5.dis.drawpix(18, 0x00f000);
-                M5.dis.drawpix(19, 0x00f000);
-                M5.dis.drawpix(20, 0x00f000);
-                M5.dis.drawpix(21, 0x00f000);
-                M5.dis.drawpix(22, 0x00f000);
-                M5.dis.drawpix(23, 0x00f000);
-                M5.dis.drawpix(24, 0x00f000);
-
-              }
-
-
-            }
-
-            check1 = true;
-            M5.update();
-            break;
-
-          // case to show temperature graph
-          case 4:
-
-
-
-            // display number 4 to show forth mode
-            // check if it comes from case 3
-            if (check1) {
-              M5.dis.clear();
-              M5.dis.drawpix(2, 0xf00000);
-              M5.dis.drawpix(6, 0xf00000);
-              M5.dis.drawpix(10, 0xf00000);
-              M5.dis.drawpix(11, 0xf00000);
-              M5.dis.drawpix(12, 0xf00000);
-              M5.dis.drawpix(13, 0xf00000);
-              // M5.dis.drawpix(16, 0xf00000);
-              M5.dis.drawpix(17, 0xf00000);
-              M5.dis.drawpix(22, 0xf00000);
-            }
-            if (M5.Btn.wasPressed()) {
-              check2 = true;
-            }
-
-            if  (check2 == true) {
-
-              if (M5.Btn.wasPressed()) {
-                previoustime4 = currentTime; // set previoustime4 to be used in getting the temperatures in interval
-                check1 = false;
-              }
-
-
-              //  Serial.printf("%ld", currentTime);
-
-              M5.dis.clear();
-
-              // store temp in five variables at specific intervals (with the five variables altering each column height pixel of
-              //M5 atom)
-              if ((currentTime - previoustime4 >  timeinterval1) && (currentTime - previoustime4 <  timeinterval1 + 500) ) {
-                temp1 = temp;
-                // Serial.printf("%.2f Temp1", temp1);
-
-              }
-              if  ((currentTime - previoustime4 >  timeinterval2) && (currentTime - previoustime4 <  timeinterval2 + 500) ) {
-                temp2 = temp;
-                // Serial.printf("%.2f Temp2", temp2);
-              }
-              if ((currentTime - previoustime4 >  timeinterval3) && (currentTime - previoustime4 <  timeinterval3 + 500) ) {
-                temp3 = temp;
-                // Serial.printf("%.2f Temp3", temp3);
-              }
-              if  ((currentTime - previoustime4 >  timeinterval4) && (currentTime - previoustime4 <  timeinterval4 + 500) ) {
-                temp4 = temp;
-                // Serial.printf("%.2f Temp4", temp4);
-              }
-              if  ((currentTime - previoustime4 >  timeinterval5) && (currentTime - previoustime4 <  timeinterval5 + 500) ) {
-                temp5 = temp;
-                // Serial.printf("%.2f Temp5", temp5);
-              }
-
-              // for the first column pixels
-              if (temp1 < 25 && temp1 > 1) {
-                M5.dis.drawpix(20, 0xff0000);   // display only for the bottom pixel of first column
-              }
-              if (temp1 >= 25 && temp1 < 30) {
-
-                M5.dis.drawpix(15, 0xff0000);  // display for two pixels of first column from bottom
-                M5.dis.drawpix(20, 0xff0000);
-              }
-              if (temp1 >= 30 && temp1 < 35) {
-                M5.dis.drawpix(10, 0xff0000);
-                M5.dis.drawpix(15, 0xff0000);   // display for three pixels of first column from bottom
-                M5.dis.drawpix(20, 0xff0000);
-              }
-              if (temp1 >= 35 && temp1 < 40) {
-                M5.dis.drawpix(5, 0xff0000);
-                M5.dis.drawpix(10, 0xff0000);     // display for four pixels of first column from bottom
-                M5.dis.drawpix(15, 0xff0000);
-                M5.dis.drawpix(20, 0xff0000);
-              }
-              if (temp1 >= 40) {
-                M5.dis.drawpix(0, 0xff0000);    // display for all five pixels of first column
-                M5.dis.drawpix(5, 0xff0000);
-                M5.dis.drawpix(10, 0xff0000);
-                M5.dis.drawpix(15, 0xff0000);
-                M5.dis.drawpix(20, 0xff0000);
-              }
-              ////////
-
-              // for the second column pixels
-              if (temp2 < 25 && temp2 > 1) {
-                M5.dis.drawpix(21, 0xff0000);
-              }
-              if (temp2 >= 25 && temp2 < 30) {
-                M5.dis.drawpix(16, 0xff0000);
-                M5.dis.drawpix(21, 0xff0000);
-              }
-              if (temp2 >= 30 && temp2 < 35) {
-                M5.dis.drawpix(11, 0xff0000);
-                M5.dis.drawpix(16, 0xff0000);
-                M5.dis.drawpix(21, 0xff0000);
-              }
-              if (temp2 >= 35 && temp2 < 40) {
-                M5.dis.drawpix(6, 0xff0000);
-                M5.dis.drawpix(11, 0xff0000);
-                M5.dis.drawpix(16, 0xff0000);
-                M5.dis.drawpix(21, 0xff0000);
-              }
-              if (temp2 >= 40) {
-                M5.dis.drawpix(1, 0xff0000);
-                M5.dis.drawpix(6, 0xff0000);
-                M5.dis.drawpix(11, 0xff0000);
-                M5.dis.drawpix(16, 0xff0000);
-                M5.dis.drawpix(21, 0xff0000);
-              }
-              ////////
-
-              // for the third column pixels
-              if (temp3 < 25 && temp3 > 1) {
-                M5.dis.drawpix(22, 0xff0000);
-              }
-              if (temp3 >= 25 && temp3 < 30) {
-                M5.dis.drawpix(17, 0xff0000);
-                M5.dis.drawpix(22, 0xff0000);
-              }
-              if (temp3 >= 30 && temp3 < 35) {
-                M5.dis.drawpix(12, 0xff0000);
-                M5.dis.drawpix(15, 0xff0000);
-                M5.dis.drawpix(22, 0xff0000);
-              }
-              if (temp3 >= 35 && temp3 < 40) {
-                M5.dis.drawpix(7, 0xff0000);
-                M5.dis.drawpix(12, 0xff0000);
-                M5.dis.drawpix(17, 0xff0000);
-                M5.dis.drawpix(22, 0xff0000);
-              }
-              if (temp3 >= 40) {
-                M5.dis.drawpix(2, 0xff0000);
-                M5.dis.drawpix(7, 0xff0000);
-                M5.dis.drawpix(12, 0xff0000);
-                M5.dis.drawpix(17, 0xff0000);
-                M5.dis.drawpix(22, 0xff0000);
-              }
-              ////////
-
-              // for the forth column pixels
-              if (temp4 < 25 && temp4 > 1) {
-                M5.dis.drawpix(23, 0xff0000);
-              }
-              if (temp4 >= 25 && temp4 < 30) {
-                M5.dis.drawpix(18, 0xff0000);
-                M5.dis.drawpix(23, 0xff0000);
-              }
-              if (temp4 >= 30 && temp4 < 35) {
-                M5.dis.drawpix(13, 0xff0000);
-                M5.dis.drawpix(18, 0xff0000);
-                M5.dis.drawpix(23, 0xff0000);
-              }
-              if (temp4 >= 35 && temp4 < 40) {
-                M5.dis.drawpix(8, 0xff0000);
-                M5.dis.drawpix(13, 0xff0000);
-                M5.dis.drawpix(18, 0xff0000);
-                M5.dis.drawpix(23, 0xff0000);
-              }
-              if (temp4 >= 40) {
-                M5.dis.drawpix(3, 0xff0000);
-                M5.dis.drawpix(8, 0xff0000);
-                M5.dis.drawpix(13, 0xff0000);
-                M5.dis.drawpix(18, 0xff0000);
-                M5.dis.drawpix(23, 0xff0000);
-              }
-              ////////
-
-
-              // for the fifth column pixels
-              if (temp5 < 25 && temp5 > 1) {
-                M5.dis.drawpix(24, 0xff0000);
-              }
-              if (temp5 >= 25 && temp4 < 30) {
-                M5.dis.drawpix(19, 0xff0000);
-                M5.dis.drawpix(23, 0xff0000);
-              }
-              if (temp5 >= 30 && temp4 < 35) {
-                M5.dis.drawpix(14, 0xff0000);
-                M5.dis.drawpix(19, 0xff0000);
-                M5.dis.drawpix(24, 0xff0000);
-              }
-              if (temp5 >= 35 && temp4 < 40) {
-                M5.dis.drawpix(9, 0xff0000);
-                M5.dis.drawpix(14, 0xff0000);
-                M5.dis.drawpix(19, 0xff0000);
-                M5.dis.drawpix(24, 0xff0000);
-              }
-              if (temp5 >= 40) {
-                M5.dis.drawpix(4, 0xff0000);
-                M5.dis.drawpix(9, 0xff0000);
-                M5.dis.drawpix(14, 0xff0000);
-                M5.dis.drawpix(19, 0xff0000);
-                M5.dis.drawpix(24, 0xff0000);
-              }
-              ////////
-
-              // after certain time (all five column temp shown)
-              if ((currentTime - previoustime4 > 32500) && (currentTime - previoustime4 < 34000)) {
-                previoustime4 = currentTime; // reset previousTime4
-                temp1 = 0;    //reinitialize all temp values to 0
-                temp2 = 0;
-                temp3 = 0;
-                temp4 = 0;
-                temp5 = 0;
-                setBuff(0x00, 0x00, 0x00);    // make all pixels black to start displaying graph again
-                M5.dis.displaybuff(DisBuff);
-                M5.update();
-
-              };
-            }
-
-            M5.update();
-            break;
-
-          //case to show change units
-
-          case 5:
-
-            check2 = false;
-            // display number 5 to indicate fifth mode
-            if (checkmode5 == true) {
-              M5.dis.clear();
-              M5.dis.drawpix(1, 0xf00000);
-              M5.dis.drawpix(2, 0xf00000);
-              M5.dis.drawpix(3, 0xf00000);
-              M5.dis.drawpix(6, 0xf00000);
-              M5.dis.drawpix(11, 0xf00000);
-              M5.dis.drawpix(12, 0xf00000);
-              M5.dis.drawpix(13, 0xf00000);
-              M5.dis.drawpix(18, 0xf00000);
-              M5.dis.drawpix(21, 0xf00000);
-              M5.dis.drawpix(22, 0xf00000);
-              M5.dis.drawpix(23, 0xf00000);
-            }
-            if (M5.Btn.wasPressed())
-            {
-              checkmode5 = false;
-              checkm5 = true;
-            }
-
-            if (checkm5 == true) {
-              temp5C = currentTemp;
-              temp5F = currentTempF;
-              temp5K = currentTempK;
-
-              int numofdigit5 = int(log10(temp5C) + 1); // find the number of digits to the temperature
-              int power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
-
-
-              //loop to display individual numbers of the temperature
-              for (int i = 0; i < numofdigit5; i++)
-              {
-                check51 = true;
-                power5 /= 10;
-                int individualnum5 = ( temp5C / power5) % 10;
-
-                M5.dis.clear ();
-                shownumbers(individualnum5);
-                delay(1500);
-                if ((gyroY ) > 60 && (gyroY) < 300) {
-                  checkm5 = false;
-                }
-              }
-              M5.dis.clear ();
-              if (check51 == true) {
-                charaC();
-              }
-              delay(1500);
-
-
-              if ((gyroY ) > 60 && (gyroY) < 300) {
-                checkm5 = false;
-              }
-
-              numofdigit5 = int(log10(temp5F) + 1); // find the number of digits to the temperature
-              power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
-
-
-              //loop to display individual numbers of the temperature
-              for (int i = 0; i < numofdigit5; i++)
-              {
-                check52 = true;
-                power5 /= 10;
-                int individualnum5 = ( temp5F / power5) % 10;
-
-                M5.dis.clear ();
-                shownumbers(individualnum5);
-                delay(1500);
-                if ((gyroY ) > 60 && (gyroY) < 300) {
-                  checkm5 = false;
-                }
-              }
-              M5.dis.clear ();
-              if (check52 == true) {
-                charaF();
-                delay(1500);
-              }
-
-
-              if ((gyroY ) > 60 && (gyroY) < 300) {
-                checkm5 = false;
-              }
-
-              numofdigit5 = int(log10(temp5K) + 1); // find the number of digits to the temperature
-              power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
-
-
-              //loop to display individual numbers of the temperature
-              for (int i = 0; i < numofdigit5; i++)
-              {
-                check53 = true;
-                power5 /= 10;
-                int individualnum5 = ( temp5K / power5) % 10;
-
-                M5.dis.clear ();
-                shownumbers(individualnum5);
-                delay(1500);
-                if ((gyroY ) > 60 && (gyroY) < 300) {
-                  checkm5 = false;
-                }
-              }
-              M5.dis.clear ();
-              if (check53 == true) {
-                charaK();
-              }
-              delay(1500);
-
-
-              if ((gyroY ) > 60 && (gyroY) < 300) {
-                checkm5 = false;
-              }
-
-            }
-
-
-            M5.update();
-            break;
-        }
-
-        // if the tilt is above a certain range
-        //in case of face down turn screen off
-        if ((gyroY) > 300) {
-          setBuff(0x00, 0x00, 0x00);
-          M5.dis.displaybuff(DisBuff); //add M5.update later
-
-          // reset case numbers
-          counter = 0;
-
-          M5.update();
-        }
-        //another if statement to reset count when all modes are reached
-        if (counter == 6) {
-          counter = 1;
-        }
+      previoustime = currentTime;
+
+      //specified orientation change to change modes
+      if ((gyroY ) > 60 && (gyroY) < 300) {
+        counter++;
 
       }
 
+      //switch for the five modes
+      switch (counter)
+      {
+
+        // case for active temperature
+        case 1:
+          checkmode5 = true; // related to the end of code to enable mode 5
+          if (checkmode1 == true) {
+            //display 1 to show first mode
+            M5.dis.clear();
+            M5.dis.drawpix(3, 0xf00000);
+            M5.dis.drawpix(7, 0xf00000);
+            M5.dis.drawpix(8, 0xf00000);
+            M5.dis.drawpix(13, 0xf00000);
+            M5.dis.drawpix(18, 0xf00000);
+            M5.dis.drawpix(23, 0xf00000);
+          }
+
+          // if button is pressed start the task
+          if (M5.Btn.wasPressed())
+          {
+            checkmode1 = false;
+            checkm1 = true;
+          }
+
+          if (checkm1 == true) {
+            tempC = currentTemp; // store the current temperature
+
+            int numofdigit = int(log10(tempC) + 1); // find the number of digits to the temperature
+            int power = pow(10, numofdigit); // calculate ten to the power of number of digit to be used for display
+
+
+            //loop to display individual numbers of the temperature
+            for (int i = 0; i < numofdigit; i++)
+            {
+              power /= 10;
+              int individualnum = ( tempC / power) % 10;
+
+              M5.dis.clear ();
+              shownumbers(individualnum); // dusplay the number using the shownumbers functions declared in the begining
+              //We had to use delay here and sometimes for displaying temperature values only since using time to display was 
+             // because a second lag would cause the numbers not to be displayed
+              delay(1000);
+              if ((gyroY ) > 10 && (gyroY) < 300) {
+                checkm1 = false;
+              }
+            }
+            M5.dis.clear ();
+            charaC(); // display C for celcius
+            delay(1000);
+            if ((gyroY ) > 10 && (gyroY) < 300) {
+              checkm1 = false;
+            }
+
+          }
+          //          setBuff(0x255, 0x255, 0x255);
+          //          M5.dis.displaybuff(DisBuff); //add M5.update later
+          M5.update();
+          break;
+
+        // case for average temperature
+        case 2:
+          checkmode1 = true;
+          checkm1 = false;
+          // display 2 to show second mode
+          if (checkmode2 == true) {
+            M5.dis.clear();
+            M5.dis.drawpix(2, 0xf00000);
+            M5.dis.drawpix(3, 0xf00000);
+            M5.dis.drawpix(6, 0xf00000);
+            M5.dis.drawpix(8, 0xf00000);
+            M5.dis.drawpix(12, 0xf00000);
+            M5.dis.drawpix(16, 0xf00000);
+            M5.dis.drawpix(21, 0xf00000);
+            M5.dis.drawpix(22, 0xf00000);
+            M5.dis.drawpix(23, 0xf00000);
+          }
+          // if button is pressed start the task
+          if (M5.Btn.wasPressed())
+          {
+            checkmode2 = false;
+            checkm2 = true; // to start the task
+          }
+
+          if (checkm2 == true) {
+            avgtempC = sumtemp; // store the avg temperature
+
+            int numofdigit = int(log10(avgtempC) + 1); // find the number of digits to the temperature
+            int power = pow(10, numofdigit); // calculate ten to the power of number of digit to be used for display
+
+
+            //loop to display individual numbers of the temperature
+            for (int i = 0; i < numofdigit; i++)
+            {
+              power /= 10;
+              int individualnum2 = (avgtempC / power) % 10;
+
+              M5.dis.clear ();
+              shownumbers(individualnum2); // show the numbers
+              delay(1000); // same reason why we used delay above
+              if ((gyroY ) > 10 && (gyroY) < 300) {
+                checkm1 = false;
+              }
+            }
+            M5.dis.clear ();
+            charaC(); //display C for celcius
+            delay(1000); // same reason (for display)
+            if ((gyroY ) > 10 && (gyroY) < 300) {
+              checkm1 = false; // if tilted stop the display
+            }
+
+          }
+
+          check = true; // used to enable the 3 case, related with the case 3 code
+
+          M5.update();
+          break;
+
+        // case to show temperature range and current temp as color No DELAY FOR THIS
+        case 3:
+          checkmode2 = true;
+          checkm2 = false;
+          // if it comes from the second case
+          if (check) {
+            //display 3 to show case 3
+            M5.dis.clear();
+            M5.dis.drawpix(1, 0xf00000);
+            M5.dis.drawpix(2, 0xf00000);
+            M5.dis.drawpix(3, 0xf00000);
+            M5.dis.drawpix(8, 0xf00000);
+            M5.dis.drawpix(11, 0xf00000);
+            M5.dis.drawpix(12, 0xf00000);
+            M5.dis.drawpix(13, 0xf00000);
+            M5.dis.drawpix(18, 0xf00000);
+            M5.dis.drawpix(21, 0xf00000);
+            M5.dis.drawpix(22, 0xf00000);
+            M5.dis.drawpix(23, 0xf00000);
+          }
+
+
+          if (M5.Btn.wasPressed())
+          {
+            // make check false so it will only display the colors
+            //with temperature range (the task) with out displaying
+            //number 3 till tilted
+
+            check = false;
+            M5.dis.clear();
+            M5.IMU.getTempData(&temp);
+
+
+            if (temp <= 10)
+            { //setting lights to blue
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xf000ff);
+              M5.dis.drawpix(15, 0xf000ff);
+              M5.dis.drawpix(16, 0xf000ff);
+              M5.dis.drawpix(17, 0xf000ff);
+              M5.dis.drawpix(18, 0xf000ff);
+              M5.dis.drawpix(19, 0xf000ff);
+              M5.dis.drawpix(20, 0xf000ff);
+              M5.dis.drawpix(21, 0xf000ff);
+              M5.dis.drawpix(22, 0xf000ff);
+              M5.dis.drawpix(23, 0xf000ff);
+              M5.dis.drawpix(24, 0xf000ff);
+
+
+            }
+
+
+            if (temp >= 10 && temp < 20)
+            { // settign lights to green
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xf00800);
+              M5.dis.drawpix(15, 0xf00800);
+              M5.dis.drawpix(16, 0xf00800);
+              M5.dis.drawpix(17, 0xf00800);
+              M5.dis.drawpix(18, 0xf00800);
+              M5.dis.drawpix(19, 0xf00800);
+              M5.dis.drawpix(20, 0xf00800);
+              M5.dis.drawpix(21, 0xf00800);
+              M5.dis.drawpix(22, 0xf00800);
+              M5.dis.drawpix(23, 0xf00800);
+              M5.dis.drawpix(24, 0xf00800);
+
+            }
+
+            if (temp >= 20 && temp < 30)
+            { //setting lights to white
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xffffff);
+              M5.dis.drawpix(15, 0xffffff);
+              M5.dis.drawpix(16, 0xffffff);
+              M5.dis.drawpix(17, 0xffffff);
+              M5.dis.drawpix(18, 0xffffff);
+              M5.dis.drawpix(19, 0xffffff);
+              M5.dis.drawpix(20, 0xffffff);
+              M5.dis.drawpix(21, 0xffffff);
+              M5.dis.drawpix(22, 0xffffff);
+              M5.dis.drawpix(23, 0xffffff);
+              M5.dis.drawpix(24, 0xffffff);
+
+            }
+            if (temp >= 30  && temp < 40)
+            { // setting lights to yellow
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0xffff00);
+              M5.dis.drawpix(15, 0xffff00);
+              M5.dis.drawpix(16, 0xffff00);
+              M5.dis.drawpix(17, 0xffff00);
+              M5.dis.drawpix(18, 0xffff00);
+              M5.dis.drawpix(19, 0xffff00);
+              M5.dis.drawpix(20, 0xfffff00);
+              M5.dis.drawpix(21, 0xffff00);
+              M5.dis.drawpix(22, 0xffff00);
+              M5.dis.drawpix(23, 0xffff00);
+              M5.dis.drawpix(24, 0xffff00);
+
+            }
+
+            if (temp >= 40)
+            { // setting lights to red 
+              M5.dis.drawpix(0, 0xf000ff);
+              M5.dis.drawpix(1, 0xf00800);
+              M5.dis.drawpix(2, 0xffffff);
+              M5.dis.drawpix(3, 0xffff00);
+              M5.dis.drawpix(4, 0x00f000);
+              M5.dis.drawpix(5, 0xf000ff);
+              M5.dis.drawpix(6, 0xf00800);
+              M5.dis.drawpix(7, 0xffffff);
+              M5.dis.drawpix(8, 0xffff00);
+              M5.dis.drawpix(9, 0x00f000);
+              M5.dis.drawpix(10, 0xf000ff);
+              M5.dis.drawpix(11, 0xf00800);
+              M5.dis.drawpix(12, 0xffffff);
+              M5.dis.drawpix(13, 0xffff00);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(14, 0x00f000);
+              M5.dis.drawpix(15, 0x00f000);
+              M5.dis.drawpix(16, 0x00f000);
+              M5.dis.drawpix(17, 0x00f000);
+              M5.dis.drawpix(18, 0x00f000);
+              M5.dis.drawpix(19, 0x00f000);
+              M5.dis.drawpix(20, 0x00f000);
+              M5.dis.drawpix(21, 0x00f000);
+              M5.dis.drawpix(22, 0x00f000);
+              M5.dis.drawpix(23, 0x00f000);
+              M5.dis.drawpix(24, 0x00f000);
+
+            }
+
+
+          }
+
+          check1 = true;
+          M5.update();
+          break;
+
+        // case to show temperature graph
+        case 4:
+
+          // display number 4 to show forth mode
+          // check if it comes from case 3
+          if (check1) {
+            M5.dis.clear();
+            M5.dis.drawpix(2, 0xf00000);
+            M5.dis.drawpix(6, 0xf00000);
+            M5.dis.drawpix(10, 0xf00000);
+            M5.dis.drawpix(11, 0xf00000);
+            M5.dis.drawpix(12, 0xf00000);
+            M5.dis.drawpix(13, 0xf00000);
+            // M5.dis.drawpix(16, 0xf00000);
+            M5.dis.drawpix(17, 0xf00000);
+            M5.dis.drawpix(22, 0xf00000);
+          }
+          if (M5.Btn.wasPressed()) {
+            check2 = true;
+          }
+
+          if  (check2 == true) {
+
+            if (M5.Btn.wasPressed()) {
+              previoustime4 = currentTime; // set previoustime4 to be used in getting the temperatures in interval
+              check1 = false;
+            }
+
+
+
+
+            M5.dis.clear();
+
+            // store temp in five variables at specific intervals (with the five variables altering each column height pixel of
+            //M5 atom)
+            if ((currentTime - previoustime4 >  timeinterval1) && (currentTime - previoustime4 <  timeinterval1 + 500) ) {
+              temp1 = temp;
+
+            }
+            if  ((currentTime - previoustime4 >  timeinterval2) && (currentTime - previoustime4 <  timeinterval2 + 500) ) {
+              temp2 = temp;
+
+            }
+            if ((currentTime - previoustime4 >  timeinterval3) && (currentTime - previoustime4 <  timeinterval3 + 500) ) {
+              temp3 = temp;
+            }
+            if  ((currentTime - previoustime4 >  timeinterval4) && (currentTime - previoustime4 <  timeinterval4 + 500) ) {
+              temp4 = temp;
+
+            }
+            if  ((currentTime - previoustime4 >  timeinterval5) && (currentTime - previoustime4 <  timeinterval5 + 500) ) {
+              temp5 = temp;
+
+            }
+
+            // for the first column pixels
+            if (temp1 < 25 && temp1 > 1) {
+              M5.dis.drawpix(20, 0xff0000);   // display only for the bottom pixel of first column
+            }
+            if (temp1 >= 25 && temp1 < 30) {
+
+              M5.dis.drawpix(15, 0xff0000);  // display for two pixels of first column from bottom
+              M5.dis.drawpix(20, 0xff0000);
+            }
+            if (temp1 >= 30 && temp1 < 35) {
+              M5.dis.drawpix(10, 0xff0000);
+              M5.dis.drawpix(15, 0xff0000);   // display for three pixels of first column from bottom
+              M5.dis.drawpix(20, 0xff0000);
+            }
+            if (temp1 >= 35 && temp1 < 40) {
+              M5.dis.drawpix(5, 0xff0000);
+              M5.dis.drawpix(10, 0xff0000);     // display for four pixels of first column from bottom
+              M5.dis.drawpix(15, 0xff0000);
+              M5.dis.drawpix(20, 0xff0000);
+            }
+            if (temp1 >= 40) {
+              M5.dis.drawpix(0, 0xff0000);    // display for all five pixels of first column
+              M5.dis.drawpix(5, 0xff0000);
+              M5.dis.drawpix(10, 0xff0000);
+              M5.dis.drawpix(15, 0xff0000);
+              M5.dis.drawpix(20, 0xff0000);
+            }
+            ////////
+
+            // for the second column pixels
+            if (temp2 < 25 && temp2 > 1) {
+              M5.dis.drawpix(21, 0xff0000);
+            }
+            if (temp2 >= 25 && temp2 < 30) {
+              M5.dis.drawpix(16, 0xff0000);
+              M5.dis.drawpix(21, 0xff0000);
+            }
+            if (temp2 >= 30 && temp2 < 35) {
+              M5.dis.drawpix(11, 0xff0000);
+              M5.dis.drawpix(16, 0xff0000);
+              M5.dis.drawpix(21, 0xff0000);
+            }
+            if (temp2 >= 35 && temp2 < 40) {
+              M5.dis.drawpix(6, 0xff0000);
+              M5.dis.drawpix(11, 0xff0000);
+              M5.dis.drawpix(16, 0xff0000);
+              M5.dis.drawpix(21, 0xff0000);
+            }
+            if (temp2 >= 40) {
+              M5.dis.drawpix(1, 0xff0000);
+              M5.dis.drawpix(6, 0xff0000);
+              M5.dis.drawpix(11, 0xff0000);
+              M5.dis.drawpix(16, 0xff0000);
+              M5.dis.drawpix(21, 0xff0000);
+            }
+            ////////
+
+            // for the third column pixels
+            if (temp3 < 25 && temp3 > 1) {
+              M5.dis.drawpix(22, 0xff0000);
+            }
+            if (temp3 >= 25 && temp3 < 30) {
+              M5.dis.drawpix(17, 0xff0000);
+              M5.dis.drawpix(22, 0xff0000);
+            }
+            if (temp3 >= 30 && temp3 < 35) {
+              M5.dis.drawpix(12, 0xff0000);
+              M5.dis.drawpix(15, 0xff0000);
+              M5.dis.drawpix(22, 0xff0000);
+            }
+            if (temp3 >= 35 && temp3 < 40) {
+              M5.dis.drawpix(7, 0xff0000);
+              M5.dis.drawpix(12, 0xff0000);
+              M5.dis.drawpix(17, 0xff0000);
+              M5.dis.drawpix(22, 0xff0000);
+            }
+            if (temp3 >= 40) {
+              M5.dis.drawpix(2, 0xff0000);
+              M5.dis.drawpix(7, 0xff0000);
+              M5.dis.drawpix(12, 0xff0000);
+              M5.dis.drawpix(17, 0xff0000);
+              M5.dis.drawpix(22, 0xff0000);
+            }
+            ////////
+
+            // for the forth column pixels
+            if (temp4 < 25 && temp4 > 1) {
+              M5.dis.drawpix(23, 0xff0000);
+            }
+            if (temp4 >= 25 && temp4 < 30) {
+              M5.dis.drawpix(18, 0xff0000);
+              M5.dis.drawpix(23, 0xff0000);
+            }
+            if (temp4 >= 30 && temp4 < 35) {
+              M5.dis.drawpix(13, 0xff0000);
+              M5.dis.drawpix(18, 0xff0000);
+              M5.dis.drawpix(23, 0xff0000);
+            }
+            if (temp4 >= 35 && temp4 < 40) {
+              M5.dis.drawpix(8, 0xff0000);
+              M5.dis.drawpix(13, 0xff0000);
+              M5.dis.drawpix(18, 0xff0000);
+              M5.dis.drawpix(23, 0xff0000);
+            }
+            if (temp4 >= 40) {
+              M5.dis.drawpix(3, 0xff0000);
+              M5.dis.drawpix(8, 0xff0000);
+              M5.dis.drawpix(13, 0xff0000);
+              M5.dis.drawpix(18, 0xff0000);
+              M5.dis.drawpix(23, 0xff0000);
+            }
+            ////////
+
+
+            // for the fifth column pixels
+            if (temp5 < 25 && temp5 > 1) {
+              M5.dis.drawpix(24, 0xff0000);
+            }
+            if (temp5 >= 25 && temp4 < 30) {
+              M5.dis.drawpix(19, 0xff0000);
+              M5.dis.drawpix(23, 0xff0000);
+            }
+            if (temp5 >= 30 && temp4 < 35) {
+              M5.dis.drawpix(14, 0xff0000);
+              M5.dis.drawpix(19, 0xff0000);
+              M5.dis.drawpix(24, 0xff0000);
+            }
+            if (temp5 >= 35 && temp4 < 40) {
+              M5.dis.drawpix(9, 0xff0000);
+              M5.dis.drawpix(14, 0xff0000);
+              M5.dis.drawpix(19, 0xff0000);
+              M5.dis.drawpix(24, 0xff0000);
+            }
+            if (temp5 >= 40) {
+              M5.dis.drawpix(4, 0xff0000);
+              M5.dis.drawpix(9, 0xff0000);
+              M5.dis.drawpix(14, 0xff0000);
+              M5.dis.drawpix(19, 0xff0000);
+              M5.dis.drawpix(24, 0xff0000);
+            }
+            ////////
+
+            // after certain time (all five column temp shown)
+            if ((currentTime - previoustime4 > 32500) && (currentTime - previoustime4 < 34000)) {
+              previoustime4 = currentTime; // reset previousTime4
+              temp1 = 0;    //reinitialize all temp values to 0
+              temp2 = 0;
+              temp3 = 0;
+              temp4 = 0;
+              temp5 = 0;
+              setBuff(0x00, 0x00, 0x00);    // make all pixels black to start displaying graph again
+              M5.dis.displaybuff(DisBuff);
+              M5.update();
+
+            };
+          }
+
+          M5.update();
+          break;
+
+        //case to show change units
+
+        case 5:
+
+          check2 = false;
+          // display number 5 to indicate fifth mode
+          if (checkmode5 == true) {
+            M5.dis.clear();
+            M5.dis.drawpix(1, 0xf00000);
+            M5.dis.drawpix(2, 0xf00000);
+            M5.dis.drawpix(3, 0xf00000);
+            M5.dis.drawpix(6, 0xf00000);
+            M5.dis.drawpix(11, 0xf00000);
+            M5.dis.drawpix(12, 0xf00000);
+            M5.dis.drawpix(13, 0xf00000);
+            M5.dis.drawpix(18, 0xf00000);
+            M5.dis.drawpix(21, 0xf00000);
+            M5.dis.drawpix(22, 0xf00000);
+            M5.dis.drawpix(23, 0xf00000);
+          }
+          if (M5.Btn.wasPressed())
+          {
+            checkmode5 = false;
+            checkm5 = true;
+          }
+
+          if (checkm5 == true) {
+            // record the temperature in all units
+            temp5C = currentTemp;
+            temp5F = currentTempF;
+            temp5K = currentTempK;
+
+            int numofdigit5 = int(log10(temp5C) + 1); // find the number of digits to the temperature
+            int power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
+
+
+            //loop to display individual numbers of the temperature in celcuius
+            for (int i = 0; i < numofdigit5; i++)
+            {
+              check51 = true;
+              power5 /= 10;
+              int individualnum5 = ( temp5C / power5) % 10; // use celcius value
+
+              M5.dis.clear ();
+              shownumbers(individualnum5);
+              delay(1000); // delay for display
+              if ((gyroY ) > 10 && (gyroY) < 300) {
+                checkm5 = false;
+              }
+            }
+            M5.dis.clear ();
+            if (check51 == true) {
+              charaC(); // show letter C
+            }
+            delay(1000);
+
+
+            if ((gyroY ) > 60 && (gyroY) < 300) {
+              checkm5 = false;
+            }
+
+            numofdigit5 = int(log10(temp5F) + 1); // find the number of digits to the temperature
+            power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
+
+
+            //loop to display individual numbers of the temperature in farhenite
+            for (int i = 0; i < numofdigit5; i++)
+            {
+              check52 = true;
+              power5 /= 10;
+              int individualnum5 = ( temp5F / power5) % 10; // use farhenite value
+
+              M5.dis.clear ();
+              shownumbers(individualnum5);
+              delay(1000);
+              if ((gyroY ) > 10 && (gyroY) < 300) {
+                checkm5 = false;
+              }
+            }
+            M5.dis.clear ();
+            if (check52 == true) {
+              charaF(); // Display F for farhenite
+              delay(1000); // as always it is used for display but the delay time is reduced as much as possible while the values can also be seen
+            }
+
+
+            if ((gyroY ) > 10 && (gyroY) < 300) {
+              checkm5 = false;
+            }
+
+            numofdigit5 = int(log10(temp5K) + 1); // find the number of digits to the temperature
+            power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
+
+
+            //loop to display individual numbers of the temperature for kelvin
+            for (int i = 0; i < numofdigit5; i++)
+            {
+              check53 = true;
+              power5 /= 10;
+              int individualnum5 = ( temp5K / power5) % 10;
+
+              M5.dis.clear ();
+              shownumbers(individualnum5); 
+              delay(1000);
+              if ((gyroY ) > 10 && (gyroY) < 300) {
+                checkm5 = false;
+              }
+            }
+            M5.dis.clear ();
+            if (check53 == true) {
+              charaK();  // display letter K for kelvin
+            }
+            delay(1000);
+
+
+            if ((gyroY ) > 10 && (gyroY) < 300) {
+              checkm5 = false;
+            }
+
+          }
+
+
+          M5.update();
+          break;
+      }
+
+      // if the tilt is above a certain range
+      //in case of face down turn screen off
+      if ((gyroY) > 300) {
+        setBuff(0x00, 0x00, 0x00);
+        M5.dis.displaybuff(DisBuff); //add M5.update later
+
+        // reset case numbers
+        counter = 0;
+
+        M5.update();
+      }
+      //another if statement to reset count when all modes are reached
+      if (counter == 6) {
+        counter = 1;
+      }
+
     }
+
   }
+
   else
   {
     // Fail to initialize IMU (Maybe)
@@ -1045,6 +1041,4 @@ void loop()
     delay(500);
     M5.update();
   }
-  delay(50); //impo
-  M5.update();
 }
