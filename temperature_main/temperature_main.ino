@@ -6,6 +6,11 @@
 #define Data_pin 27 //specific for ATOM matrix
 
 
+float currentTemp = 1;
+float currentTempF = 0; // in Farhenite
+float currentTempK = 0; // in Kelvin
+float original_gyro = 0.0;
+
 
 bool IMU6886Flag = false;
 float gyroX, gyroY , gyroZ, temp; // declare for measuring the values
@@ -26,6 +31,11 @@ bool check52 = false;
 bool check53 = false;
 float sumtemp;
 uint8_t DisBuff[2 + 5 * 5 * 3];
+
+//for removing 
+long previous1 = 0;
+long previous2 = 0;
+long previous3 = 0;
 
 // function to change the color
 void setBuff(uint8_t Rdata, uint8_t Gdata, uint8_t Bdata) // function to change the color
@@ -311,10 +321,7 @@ void loop()
 {
   long currentTime = millis();  // measure the current time
   // declare variables to store the temperature in different units
-  float currentTemp = 0;
-  float currentTempF = 0; // in Farhenite
-  float currentTempK = 0; // in Kelvin
-  float original_gyro = 0.0;
+
   if (IMU6886Flag == true)
   {
     M5.IMU.getTempData(&temp); //get the temperature
@@ -325,6 +332,7 @@ void loop()
     if (currentTime - previoustime1 >= time_interval_1) {
       previoustime1 = currentTime;
       currentTemp = temp;
+      Serial.println(currentTemp);
 
       // Values of temperature in different units to be used in Mode 5
       currentTempF = ((9 / 5) * (currentTemp)) + 32;
@@ -382,39 +390,53 @@ void loop()
             checkmode1 = false;
             checkm1 = true;
           }
-
+          Serial.printf("%.2f", currentTemp);
           if (checkm1 == true) {
+            long current1 = millis();
             tempC = currentTemp; // store the current temperature
-
-            int numofdigit = int(log10(tempC) + 1); // find the number of digits to the temperature
-            int power = pow(10, numofdigit); // calculate ten to the power of number of digit to be used for display
 
 
             //loop to display individual numbers of the temperature
-            for (int i = 0; i < numofdigit; i++)
-            {
-              power /= 10;
-              int individualnum = ( tempC / power) % 10;
 
-              M5.dis.clear ();
-              shownumbers(individualnum); // dusplay the number using the shownumbers functions declared in the begining
-              //We had to use delay here and sometimes for displaying temperature values only since using time to display was 
-             // because a second lag would cause the numbers not to be displayed
-              delay(1000);
-              if ((gyroY ) > 10 && (gyroY) < 300) {
-                checkm1 = false;
-              }
+            if (current1 - previous1 <= 1500) {
+
+              int individualnum = ( tempC / 10) % 10;
+              shownumbers(individualnum);
+              Serial.printf("%d", individualnum);
             }
-            M5.dis.clear ();
-            charaC(); // display C for celcius
-            delay(1000);
-            if ((gyroY ) > 10 && (gyroY) < 300) {
-              checkm1 = false;
+
+            if ((current1 - previous1 > 1505) && (current1 - previous1 <= 1800)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            M5.update ();
+            if ((current1 - previous1 > 1810) && (current1 - previous1 <= 3400)) {
+              int individualnum = ( tempC) % 10;
+              shownumbers(individualnum);
+              Serial.printf("%d", individualnum);
+            }
+
+
+            if ((current1 - previous1 > 3400) && (current1 - previous1 <= 3700)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+              Serial.printf("true");
+
+            }
+            M5.update ();
+            if ((current1 - previous1 > 3700) && (current1 - previous1 <= 5800)) {
+
+              charaC(); // display C for celcius
+
+            }
+
+            if (current1 - previous1 > 5500) {
+              previous1 = current1;
+              M5.dis.clear ();
+              M5.update ();
             }
 
           }
-          //          setBuff(0x255, 0x255, 0x255);
-          //          M5.dis.displaybuff(DisBuff); //add M5.update later
           M5.update();
           break;
 
@@ -444,29 +466,46 @@ void loop()
 
           if (checkm2 == true) {
             avgtempC = sumtemp; // store the avg temperature
+            long current2 = millis();
 
-            int numofdigit = int(log10(avgtempC) + 1); // find the number of digits to the temperature
-            int power = pow(10, numofdigit); // calculate ten to the power of number of digit to be used for display
+            //loop to display individual numbers of the average temperature
 
+            if (current2 - previous2 <= 1500) {
 
-            //loop to display individual numbers of the temperature
-            for (int i = 0; i < numofdigit; i++)
-            {
-              power /= 10;
-              int individualnum2 = (avgtempC / power) % 10;
-
-              M5.dis.clear ();
-              shownumbers(individualnum2); // show the numbers
-              delay(1000); // same reason why we used delay above
-              if ((gyroY ) > 10 && (gyroY) < 300) {
-                checkm1 = false;
-              }
+              int individualnum = ( avgtempC / 10) % 10;
+              shownumbers(individualnum);
+              Serial.printf("%d", individualnum);
             }
-            M5.dis.clear ();
-            charaC(); //display C for celcius
-            delay(1000); // same reason (for display)
-            if ((gyroY ) > 10 && (gyroY) < 300) {
-              checkm1 = false; // if tilted stop the display
+
+            if ((current2 - previous2 > 1505) && (current2 - previous2 <= 1800)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            M5.update ();
+            if ((current2 - previous2 > 1810) && (current2 - previous2 <= 3400)) {
+              int individualnum = ( avgtempC) % 10;
+              shownumbers(individualnum);
+              Serial.printf("%d", individualnum);
+            }
+
+
+            if ((current2 - previous2 > 3400) && (current2 - previous2 <= 3700)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+              Serial.printf("true");
+
+            }
+            M5.update ();
+            if ((current2 - previous2 > 3700) && (current2 - previous2 <= 5800)) {
+
+              charaC(); // display C for celcius
+
+            }
+
+            if (current2 - previous2 > 5500) {
+              previous2 = current2;
+              M5.dis.clear ();
+              M5.update ();
             }
 
           }
@@ -476,7 +515,7 @@ void loop()
           M5.update();
           break;
 
-        // case to show temperature range and current temp as color No DELAY FOR THIS
+       
         case 3:
           checkmode2 = true;
           checkm2 = false;
@@ -635,7 +674,7 @@ void loop()
             }
 
             if (temp >= 40)
-            { // setting lights to red 
+            { // setting lights to red
               M5.dis.drawpix(0, 0xf000ff);
               M5.dis.drawpix(1, 0xf00800);
               M5.dis.drawpix(2, 0xffffff);
@@ -918,96 +957,109 @@ void loop()
             temp5C = currentTemp;
             temp5F = currentTempF;
             temp5K = currentTempK;
-
-            int numofdigit5 = int(log10(temp5C) + 1); // find the number of digits to the temperature
-            int power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
+            long current3 = millis();
 
 
-            //loop to display individual numbers of the temperature in celcuius
-            for (int i = 0; i < numofdigit5; i++)
-            {
-              check51 = true;
-              power5 /= 10;
-              int individualnum5 = ( temp5C / power5) % 10; // use celcius value
+            //loop to display individual numbers of the temperature in celcius
 
+            if (current3 - previous3 <= 1500) {
+
+              int individualnum = ( temp5C / 10) % 10;
+              shownumbers(individualnum);
+              Serial.printf("%d", individualnum);
+            }
+
+            if ((current3 - previous3 > 1505) && (current3 - previous3 <= 1800)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            M5.update ();
+            if ((current3 - previous3 > 1810) && (current3 - previous3 <= 3400)) {
+              int individualnum = ( temp5C) % 10;
+              shownumbers(individualnum);
+
+            }
+
+
+            if ((current3 - previous3 > 3400) && (current3 - previous3 <= 3700)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+
+            }
+            M5.update ();
+            if ((current3 - previous3 > 3700) && (current3 - previous3 <= 5800)) {
+
+              charaC(); // display C for celcius
+
+            }
+
+            if ((current3 - previous3 > 5800) && (current3 - previous3 <= 6100)) {
+
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+
+            }
+
+            // Farhenite display
+            if ((current3 - previous3 > 6110) && (current3 - previous3 <= 7710)) {
+              int individualnum = ( temp5F / 10) % 10;
+              shownumbers(individualnum);
+            }
+            if ((current3 - previous3 > 7110) && (current3 - previous3 <= 7400)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            if ((current3 - previous3 > 7400) && (current3 - previous3 <= 9200)) {
+              int individualnum = ( temp5F) % 10;
+              shownumbers(individualnum);
+            }
+            if ((current3 - previous3 > 9200) && (current3 - previous3 <= 9500)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            if ((current3 - previous3 > 9500) && (current3 - previous3 <= 11300)) {
+              charaF(); // show letter F for farhenite
+            }
+            if ((current3 - previous3 > 11300) && (current3 - previous3 <= 11700)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+
+            // Kelvin display
+            if ((current3 - previous3 > 11700) && (current3 - previous3 <= 13400)) {
+              int individualnum = ( temp5K / 100) % 10;
+              shownumbers(individualnum);
+            }
+            if ((current3 - previous3 > 13400) && (current3 - previous3 <= 13700)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            if ((current3 - previous3 > 13700) && (current3 - previous3 <= 15500)) {
+              int individualnum = ( temp5K / 10) % 10;
+              shownumbers(individualnum);
+            }
+            if ((current3 - previous3 > 15500) && (current3 - previous3 <= 15800)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            if ((current3 - previous3 > 15800) && (current3 - previous3 <= 17600)) {
+              int individualnum = ( temp5K) % 10;
+              shownumbers(individualnum);
+            }
+            if ((current3 - previous3 > 17600) && (current3 - previous3 <= 17900)) {
+              setBuff(0x00, 0x00, 0x00);
+              M5.dis.displaybuff(DisBuff);
+            }
+            if ((current3 - previous3 > 17900) && (current3 - previous3 <= 19700)) {
+              charaK(); // show letter K for kelvin
+            }
+
+            if (current3 - previous3 > 19700) {
+              previous3 = current3;
               M5.dis.clear ();
-              shownumbers(individualnum5);
-              delay(1000); // delay for display
-              if ((gyroY ) > 10 && (gyroY) < 300) {
-                checkm5 = false;
-              }
+              M5.update ();
             }
-            M5.dis.clear ();
-            if (check51 == true) {
-              charaC(); // show letter C
-            }
-            delay(1000);
-
-
-            if ((gyroY ) > 60 && (gyroY) < 300) {
-              checkm5 = false;
-            }
-
-            numofdigit5 = int(log10(temp5F) + 1); // find the number of digits to the temperature
-            power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
-
-
-            //loop to display individual numbers of the temperature in farhenite
-            for (int i = 0; i < numofdigit5; i++)
-            {
-              check52 = true;
-              power5 /= 10;
-              int individualnum5 = ( temp5F / power5) % 10; // use farhenite value
-
-              M5.dis.clear ();
-              shownumbers(individualnum5);
-              delay(1000);
-              if ((gyroY ) > 10 && (gyroY) < 300) {
-                checkm5 = false;
-              }
-            }
-            M5.dis.clear ();
-            if (check52 == true) {
-              charaF(); // Display F for farhenite
-              delay(1000); // as always it is used for display but the delay time is reduced as much as possible while the values can also be seen
-            }
-
-
-            if ((gyroY ) > 10 && (gyroY) < 300) {
-              checkm5 = false;
-            }
-
-            numofdigit5 = int(log10(temp5K) + 1); // find the number of digits to the temperature
-            power5 = pow(10, numofdigit5); // calculate ten to the power of number of digit to be used for display
-
-
-            //loop to display individual numbers of the temperature for kelvin
-            for (int i = 0; i < numofdigit5; i++)
-            {
-              check53 = true;
-              power5 /= 10;
-              int individualnum5 = ( temp5K / power5) % 10;
-
-              M5.dis.clear ();
-              shownumbers(individualnum5); 
-              delay(1000);
-              if ((gyroY ) > 10 && (gyroY) < 300) {
-                checkm5 = false;
-              }
-            }
-            M5.dis.clear ();
-            if (check53 == true) {
-              charaK();  // display letter K for kelvin
-            }
-            delay(1000);
-
-
-            if ((gyroY ) > 10 && (gyroY) < 300) {
-              checkm5 = false;
-            }
-
           }
-
 
           M5.update();
           break;
