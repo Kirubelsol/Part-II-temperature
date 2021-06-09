@@ -373,6 +373,7 @@ void loop()
         // case for active temperature
         case 1:
           checkmode5 = true; // related to the end of code to enable mode 5
+          checkm5 = false;
           if (checkmode1 == true) {
             //display 1 to show first mode
             M5.dis.clear();
